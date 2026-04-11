@@ -1,0 +1,61 @@
+# api-diff sources
+#
+# each [[source]] block is one URL to track. the scraper fetches, normalizes
+# to markdown, and commits the result to `docs/<path>`. git history then
+# becomes the changelog.
+#
+# fields:
+#   name       — human-readable label
+#   url        — the URL to fetch
+#   path       — output file path under docs/ (don't include .md)
+#   selector   — optional CSS selector to scope content (default: main, article, body)
+#   wait_js    — set true if the page is known to be js-rendered (not yet supported;
+#                the scraper will warn and skip these until we add playwright)
+
+[[source]]
+name     = "Python PEP 8 — Style Guide"
+url      = "https://peps.python.org/pep-0008/"
+path     = "python/pep-0008"
+selector = "article"
+
+[[source]]
+name     = "Python PEP 20 — Zen of Python"
+url      = "https://peps.python.org/pep-0020/"
+path     = "python/pep-0020"
+selector = "article"
+
+[[source]]
+name     = "MDN — fetch() API"
+url      = "https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch"
+path     = "mdn/fetch"
+selector = "main"
+
+[[source]]
+name     = "MDN — async function"
+url      = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function"
+path     = "mdn/async-function"
+selector = "main"
+
+[[source]]
+name     = "RFC 7231 — HTTP/1.1 Semantics and Content"
+url      = "https://www.rfc-editor.org/rfc/rfc7231.html"
+path     = "rfc/rfc-7231"
+selector = "body"
+
+[[source]]
+name     = "Stripe API — Charges"
+url      = "https://docs.stripe.com/api/charges"
+path     = "stripe/charges"
+selector = "main"
+
+[[source]]
+name     = "GitHub REST API — Rate Limits"
+url      = "https://docs.github.com/en/rest/rate-limit/rate-limit"
+path     = "github/rest-rate-limit"
+selector = "article"
+
+[[source]]
+name     = "Anthropic — Messages API"
+url      = "https://docs.anthropic.com/en/api/messages"
+path     = "anthropic/messages"
+selector = "main"
