@@ -7,6 +7,7 @@ on:
       - ".github/workflows/scrape.yml"
       - ".github/scrape.py"
       - "sources.toml"
+      - "requirements.txt"
   schedule:
     # 14:51 UTC daily — off the hour, staggered from other daily jobs
     - cron: "51 14 * * *"
