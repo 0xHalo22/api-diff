@@ -17,6 +17,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
 
@@ -47,18 +48,36 @@ MIN_CONTENT_LEN = 400
 FALLBACK_SELECTORS = ["main", "article", "[role=main]", "body"]
 
 
-def fetch_html(url: str) -> str:
-    req = urllib.request.Request(
-        url,
-        headers={
-            "User-Agent": USER_AGENT,
-            "Accept": "text/html,application/xhtml+xml",
-            "Accept-Language": "en-US,en;q=0.9",
-        },
-    )
-    with urllib.request.urlopen(req, timeout=60) as r:
-        encoding = r.headers.get_content_charset() or "utf-8"
-        return r.read().decode(encoding, errors="replace")
+def fetch_html(url: str, attempts: int = 3, base_backoff: float = 2.0) -> str:
+    """fetch a URL with retries.
+
+    api-diff hits up to 8 different vendors per run; any single transient blip
+    should be retried rather than counted as 'page broken'. we use 3 attempts
+    (vs 4 for arxiv) because vendor docs sites are generally more reliable
+    than the arxiv API, and we have many sources to get through."""
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+    last_err: Exception | None = None
+    backoff = base_backoff
+    for attempt in range(1, attempts + 1):
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=60) as r:
+                encoding = r.headers.get_content_charset() or "utf-8"
+                return r.read().decode(encoding, errors="replace")
+        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as e:
+            last_err = e
+            if attempt < attempts:
+                print(f"    fetch attempt {attempt}/{attempts} failed ({type(e).__name__}: {e}); retrying in {backoff:.1f}s")
+                time.sleep(backoff)
+                backoff *= 2
+    # re-raise the last error (preserving its type so the caller's except
+    # branches for HTTPError vs URLError still work as expected)
+    assert last_err is not None
+    raise last_err
 
 
 def extract_content(html: str, selector: str | None) -> str | None:
